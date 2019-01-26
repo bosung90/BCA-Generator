@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 // import 'package:english_words/english_words.dart';
 import 'package:flutter/widgets.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 main() {
   runApp(MaterialApp(
@@ -16,8 +17,10 @@ class MyStateApp extends State {
   final canvasItems = CanvasItems();
 
   MyStateApp() {
-    // _addText('one', top: 20);
-    // _addText('two', top: 40);
+    // Firestore.instance
+    //     .collection('books')
+    //     .document()
+    //     .setData({'title': 'title', 'author': 'author'});
   }
 
   Widget build(BuildContext context) {

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 // import 'package:english_words/english_words.dart';
-// import 'package:flutter/widgets.dart';
+import 'package:flutter/widgets.dart';
 
 main() {
   runApp(MaterialApp(
@@ -27,7 +27,9 @@ class MyStateApp extends State {
           child: Row(children: [
         Expanded(child: Stack(children: canvasItems.getPositionedList())),
         Container(
-            width: 300,
+            width: 270, color: Colors.yellow, child: getListView(canvasItems)),
+        Container(
+            width: 270,
             color: Colors.grey,
             child: Center(
               child: Column(
@@ -37,45 +39,12 @@ class MyStateApp extends State {
                     children: [
                       FlatButton(
                         color: Colors.cyan,
-                        onPressed: () {
-                          setState(() {
-                            _addText('three', top: 60);
-                          });
-                        },
+                        onPressed: _neverSatisfied,
                         child: Text('Add Text'),
                       )
                     ],
                   )),
-                  Container(
-                      height: 300,
-                      color: Colors.white,
-                      child: ListView(
-                          padding: EdgeInsets.only(top: 10, bottom: 10),
-                          children: canvasItems.canvasItemMap.keys
-                              .map((key) => Container(
-                                      child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                        Container(
-                                            padding: EdgeInsets.only(
-                                                left: 20, right: 20),
-                                            child: Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment
-                                                        .spaceBetween,
-                                                children: [
-                                                  Text(
-                                                    key,
-                                                  ),
-                                                  RawMaterialButton(
-                                                    onPressed: () => null,
-                                                    child: Text('Edit'),
-                                                  )
-                                                ])),
-                                        Divider()
-                                      ])))
-                              .toList()))
+                  Container(height: 300, color: Colors.white)
                 ],
               ),
             )),
@@ -88,7 +57,82 @@ class MyStateApp extends State {
     final canvasItem = CanvasItem.text(text,
         top: top, bottom: bottom, left: left, right: right);
     canvasItems.addCanvasItem(canvasItem);
+    setState(() {});
   }
+
+  Future<void> _neverSatisfied() async {
+    final nameTextFieldController = TextEditingController();
+    final topTextFieldController = TextEditingController();
+    final leftTextFieldController = TextEditingController();
+
+    return showDialog<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: [
+                TextField(
+                  controller: nameTextFieldController,
+                  decoration: InputDecoration(labelText: "Text"),
+                ),
+                TextField(
+                  controller: leftTextFieldController,
+                  decoration: InputDecoration(labelText: "x"),
+                ),
+                TextField(
+                  controller: topTextFieldController,
+                  decoration: InputDecoration(labelText: "y"),
+                )
+              ],
+            ),
+          ),
+          actions: [
+            FlatButton(
+              child: Text('Cancel'),
+              onPressed: Navigator.of(context).pop,
+              textColor: Colors.grey,
+            ),
+            FlatButton(
+              child: Text('Add'),
+              onPressed: () {
+                _addText(nameTextFieldController.text,
+                    top: double.parse(topTextFieldController.text),
+                    left: double.parse(leftTextFieldController.text));
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+getListView(CanvasItems canvasItems) {
+  return ListView(
+      padding: EdgeInsets.only(top: 10, bottom: 10),
+      children: canvasItems.canvasItemMap.keys
+          .map((key) => Container(
+                  child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                    Container(
+                        padding: EdgeInsets.only(left: 20, right: 20),
+                        child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                key,
+                              ),
+                              RawMaterialButton(
+                                onPressed: () => null,
+                                child: Text('Edit'),
+                              )
+                            ])),
+                    Divider()
+                  ])))
+          .toList());
 }
 
 class CanvasItems {

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:english_words/english_words.dart';
-import 'package:flutter/widgets.dart';
+// import 'package:english_words/english_words.dart';
+// import 'package:flutter/widgets.dart';
 
 main() {
   runApp(MaterialApp(
@@ -13,33 +13,30 @@ class MyApp extends StatefulWidget {
 }
 
 class MyStateApp extends State {
-  var _value = 'Hello World';
+  var textWidgets = [
+    Positioned(top: 0, child: Text('one')),
+    Positioned(top: 20, child: Text('two'))
+  ];
 
   Widget build(BuildContext context) {
     return SafeArea(
         child: Scaffold(
       body: Container(
           child: Row(children: [
-        Expanded(
-            child: Stack(children: [
-          Positioned(
-              top: 0,
-              left: 200,
-              // right: 0,
-              child: Container(color: Colors.red, child: Text('hello')))
-        ])),
+        Expanded(child: Stack(children: textWidgets)),
         Container(
             width: 300,
             color: Colors.grey,
             child: Center(
               child: Column(
-                children: <Widget>[
-                  Text(_value),
+                children: [
                   FlatButton(
                     color: Colors.cyan,
                     onPressed: () {
                       setState(() {
-                        _value = DateTime.now().toString();
+                        // _value = DateTime.now().toString();
+                        textWidgets
+                            .add(Positioned(top: 40, child: Text('three')));
                       });
                     },
                     child: Text('Button'),

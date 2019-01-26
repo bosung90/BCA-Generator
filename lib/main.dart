@@ -16,8 +16,8 @@ class MyStateApp extends State {
   final canvasItems = CanvasItems();
 
   MyStateApp() {
-    _addText('one', top: 20);
-    _addText('two', top: 40);
+    // _addText('one', top: 20);
+    // _addText('two', top: 40);
   }
 
   Widget build(BuildContext context) {
@@ -35,15 +35,36 @@ class MyStateApp extends State {
               child: Column(
                 children: [
                   Expanded(
-                      child: Column(
-                    children: [
-                      FlatButton(
-                        color: Colors.cyan,
-                        onPressed: _neverSatisfied,
-                        child: Text('Add Text'),
-                      )
-                    ],
-                  )),
+                      child: Container(
+                          color: Colors.lightBlueAccent,
+                          padding: EdgeInsets.all(10),
+                          child: Column(
+                            children: [
+                              FlatButton(
+                                color: Colors.cyan,
+                                materialTapTargetSize:
+                                    MaterialTapTargetSize.shrinkWrap,
+                                onPressed: _showAddTextDialog,
+                                child: Text('Add Text'),
+                              )
+                            ],
+                          ))),
+                  Row(children: [
+                    Expanded(
+                        child: FlatButton(
+                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      color: Colors.blueAccent,
+                      onPressed: _showAddTextDialog,
+                      child: Text('Load'),
+                    )),
+                    Expanded(
+                        child: FlatButton(
+                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      color: Colors.redAccent,
+                      onPressed: _showAddTextDialog,
+                      child: Text('Save'),
+                    ))
+                  ]),
                   Container(height: 300, color: Colors.white)
                 ],
               ),
@@ -60,7 +81,7 @@ class MyStateApp extends State {
     setState(() {});
   }
 
-  Future<void> _neverSatisfied() async {
+  Future<void> _showAddTextDialog() async {
     final nameTextFieldController = TextEditingController();
     final topTextFieldController = TextEditingController();
     final leftTextFieldController = TextEditingController();

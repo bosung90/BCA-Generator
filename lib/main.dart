@@ -13,17 +13,19 @@ class MyApp extends StatefulWidget {
 }
 
 class MyStateApp extends State {
-  var textWidgets = [
-    Positioned(top: 0, child: Text('one')),
-    Positioned(top: 20, child: Text('two'))
-  ];
+  var canvasItemMap = Map<String, Widget>();
+
+  MyStateApp() {
+    _addText('one', top: 20);
+    _addText('two', top: 40);
+  }
 
   Widget build(BuildContext context) {
     return SafeArea(
         child: Scaffold(
       body: Container(
           child: Row(children: [
-        Expanded(child: Stack(children: textWidgets)),
+        Expanded(child: Stack(children: canvasItemMap.values.toList())),
         Container(
             width: 300,
             color: Colors.grey,
@@ -34,9 +36,7 @@ class MyStateApp extends State {
                     color: Colors.cyan,
                     onPressed: () {
                       setState(() {
-                        // _value = DateTime.now().toString();
-                        textWidgets
-                            .add(Positioned(top: 40, child: Text('three')));
+                        _addText('three', top: 60);
                       });
                     },
                     child: Text('Button'),
@@ -46,6 +46,16 @@ class MyStateApp extends State {
             )),
       ])),
     ));
+  }
+
+  _addText(String text,
+      {String key, double top, double bottom, double left, double right}) {
+    var canvasItemMapKey =
+        key == null ? DateTime.now().millisecondsSinceEpoch.toString() : key;
+    var positionedTextWidget = Positioned(
+        top: top, bottom: bottom, left: left, right: right, child: Text(text));
+    canvasItemMap.update(canvasItemMapKey, (v) => positionedTextWidget,
+        ifAbsent: () => positionedTextWidget);
   }
 }
 

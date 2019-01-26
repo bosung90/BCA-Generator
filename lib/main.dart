@@ -13,7 +13,7 @@ class MyApp extends StatefulWidget {
 }
 
 class MyStateApp extends State {
-  var canvasItemMap = Map<String, Widget>();
+  final canvasItems = CanvasItems();
 
   MyStateApp() {
     _addText('one', top: 20);
@@ -25,22 +25,47 @@ class MyStateApp extends State {
         child: Scaffold(
       body: Container(
           child: Row(children: [
-        Expanded(child: Stack(children: canvasItemMap.values.toList())),
+        Expanded(child: Stack(children: canvasItems.getPositionedList())),
         Container(
             width: 300,
             color: Colors.grey,
             child: Center(
               child: Column(
                 children: [
-                  FlatButton(
-                    color: Colors.cyan,
-                    onPressed: () {
-                      setState(() {
-                        _addText('three', top: 60);
-                      });
-                    },
-                    child: Text('Button'),
-                  ),
+                  Expanded(
+                      child: Column(
+                    children: [
+                      FlatButton(
+                        color: Colors.cyan,
+                        onPressed: () {
+                          setState(() {
+                            _addText('three', top: 60);
+                          });
+                        },
+                        child: Text('Add Text'),
+                      )
+                    ],
+                  )),
+                  Container(
+                      height: 300,
+                      color: Colors.white,
+                      child: ListView(
+                          padding: const EdgeInsets.only(top: 10, bottom: 10),
+                          children: canvasItems.canvasItemMap.keys
+                              .map((key) => Container(
+                                      child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                        Container(
+                                            padding: const EdgeInsets.only(
+                                                left: 20, right: 20),
+                                            child: Text(
+                                              key,
+                                            )),
+                                        Divider()
+                                      ])))
+                              .toList()))
                 ],
               ),
             )),
@@ -49,13 +74,50 @@ class MyStateApp extends State {
   }
 
   _addText(String text,
-      {String key, double top, double bottom, double left, double right}) {
-    var canvasItemMapKey =
-        key == null ? DateTime.now().millisecondsSinceEpoch.toString() : key;
-    var positionedTextWidget = Positioned(
-        top: top, bottom: bottom, left: left, right: right, child: Text(text));
-    canvasItemMap.update(canvasItemMapKey, (v) => positionedTextWidget,
-        ifAbsent: () => positionedTextWidget);
+      {double top, double bottom, double left, double right}) {
+    final canvasItem = CanvasItem.text(text,
+        top: top, bottom: bottom, left: left, right: right);
+    canvasItems.addCanvasItem(canvasItem);
+  }
+}
+
+class CanvasItems {
+  final canvasItemMap = Map<String, CanvasItem>();
+  var uuidCounter = 0;
+
+  List getPositionedList() {
+    List<Positioned> positionedList = [];
+    canvasItemMap.values.forEach((item) => positionedList.add(item.positioned));
+    return positionedList;
+  }
+
+  List getWidgetList() {
+    List<Widget> widgets = [];
+    canvasItemMap.values.forEach((item) => widgets.add(item.widget));
+    return widgets;
+  }
+
+  List getKeyTextList() {
+    List<Widget> widgets = [];
+    canvasItemMap.keys.forEach((key) => widgets.add(Text(key)));
+    return widgets;
+  }
+
+  addCanvasItem(CanvasItem item) {
+    final canvasItemKey = (uuidCounter++).toString();
+    canvasItemMap.update(canvasItemKey, (v) => item, ifAbsent: () => item);
+  }
+}
+
+class CanvasItem {
+  Positioned positioned;
+  Widget widget;
+
+  CanvasItem.text(String text,
+      {double top, double bottom, double left, double right}) {
+    this.widget = Text(text);
+    this.positioned = Positioned(
+        top: top, bottom: bottom, left: left, right: right, child: this.widget);
   }
 }
 

@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "368958880769",
+    "firebase_url": "https://bca-generator.firebaseio.com",
+    "project_id": "bca-generator",
+    "storage_bucket": "bca-generator.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:368958880769:android:b495c5ec72e445c3",
+        "android_client_info": {
+          "package_name": "info.bosung.bcagenerator"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "368958880769-1rk0q09op92ttgml91lod5t1gsto9t53.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBYHH5SHBpBWtLAswXPVn5eGca9n-vGVlY"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

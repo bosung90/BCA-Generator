@@ -50,7 +50,7 @@ class MyStateApp extends State {
                       height: 300,
                       color: Colors.white,
                       child: ListView(
-                          padding: const EdgeInsets.only(top: 10, bottom: 10),
+                          padding: EdgeInsets.only(top: 10, bottom: 10),
                           children: canvasItems.canvasItemMap.keys
                               .map((key) => Container(
                                       child: Column(
@@ -58,11 +58,21 @@ class MyStateApp extends State {
                                               CrossAxisAlignment.start,
                                           children: [
                                         Container(
-                                            padding: const EdgeInsets.only(
+                                            padding: EdgeInsets.only(
                                                 left: 20, right: 20),
-                                            child: Text(
-                                              key,
-                                            )),
+                                            child: Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment
+                                                        .spaceBetween,
+                                                children: [
+                                                  Text(
+                                                    key,
+                                                  ),
+                                                  RawMaterialButton(
+                                                    onPressed: () => null,
+                                                    child: Text('Edit'),
+                                                  )
+                                                ])),
                                         Divider()
                                       ])))
                               .toList()))
@@ -91,12 +101,6 @@ class CanvasItems {
     return positionedList;
   }
 
-  List getWidgetList() {
-    List<Widget> widgets = [];
-    canvasItemMap.values.forEach((item) => widgets.add(item.widget));
-    return widgets;
-  }
-
   List getKeyTextList() {
     List<Widget> widgets = [];
     canvasItemMap.keys.forEach((key) => widgets.add(Text(key)));
@@ -109,15 +113,27 @@ class CanvasItems {
   }
 }
 
+enum CanvasItemType { Text, Image, Variable }
+
 class CanvasItem {
   Positioned positioned;
-  Widget widget;
+  CanvasItemType type;
+  var value;
 
   CanvasItem.text(String text,
       {double top, double bottom, double left, double right}) {
-    this.widget = Text(text);
+    this.value = text;
     this.positioned = Positioned(
-        top: top, bottom: bottom, left: left, right: right, child: this.widget);
+        top: top,
+        bottom: bottom,
+        left: left,
+        right: right,
+        child: Text(this.value));
+    this.type = CanvasItemType.Text;
+  }
+
+  editCanvasItem(BuildContext context) {
+    showDialog(context: context);
   }
 }
 

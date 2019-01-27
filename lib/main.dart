@@ -109,10 +109,9 @@ class MyStateApp extends State {
 
   _addText(String text,
       {double top, double bottom, double left, double right}) {
-    final canvasItem = CanvasItem.text(text,
-        top: top, bottom: bottom, left: left, right: right);
-    _canvasItems.addCanvasItem(canvasItem);
-    setState(() {});
+    final canvasItemsCollection = getCanvasItemsCollection();
+    canvasItemsCollection
+        .add({'left': left, 'top': top, 'type': 'Text', 'value': text});
   }
 
   Future<void> _showAddTextDialog() async {

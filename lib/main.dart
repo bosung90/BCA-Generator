@@ -1,6 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import './firestoreRefs.dart';
+import './canvasItems.dart';
+
+// 1. When Variable is added, create stateValue with defaultValue
+// 2. When rendering Variable on Canvas, print stateValue
+// 3. Ability to Create new Variable with defaultValue
+// 4. CanvasItemList show value for Text, and id for variable
 
 main() {
   Firestore.instance.settings(timestampsInSnapshotsEnabled: true);
@@ -14,42 +21,10 @@ class MyApp extends StatefulWidget {
   MyStateApp createState() => MyStateApp();
 }
 
-const GAME_ID = 'Gv3sMVfwTtQr66XaP9vr';
-
-CollectionReference getGamesCollection() =>
-    Firestore.instance.collection('Games');
-DocumentReference getGameDocument({String gameId = GAME_ID}) =>
-    Firestore.instance.collection('Games').document(gameId);
-CollectionReference getCanvasItemsCollection({String gameId = GAME_ID}) =>
-    Firestore.instance
-        .collection('Games')
-        .document(gameId)
-        .collection('CanvasItems');
-DocumentReference getCanvasItemDocument(
-        {String gameId = GAME_ID, String canvasItemId}) =>
-    Firestore.instance
-        .collection('Games')
-        .document(gameId)
-        .collection('CanvasItems')
-        .document(canvasItemId);
-
-CollectionReference getVariablesCollection({String gameId = GAME_ID}) =>
-    Firestore.instance
-        .collection('Games')
-        .document(gameId)
-        .collection('Variables');
-
-DocumentReference getVariableDocument(
-        {String gameId = GAME_ID, String variableId}) =>
-    Firestore.instance
-        .collection('Games')
-        .document(gameId)
-        .collection('Variables')
-        .document(variableId);
-
 class MyStateApp extends State {
   var _canvasItems = CanvasItems();
   Map<String, Map<String, dynamic>> _variables = Map();
+  Map<String, int> _instantiatedVariables = Map();
 
   MyStateApp() {
     getCanvasItemsCollection().snapshots().listen((data) {
@@ -62,9 +37,16 @@ class MyStateApp extends State {
                   left: doc.data['left'].toDouble(),
                   top: doc.data['top'].toDouble()));
         } else if (doc.data['type'] == 'Variable') {
+          getVariableDocument(variableId: doc.data['value'])
+              .get()
+              .then((onValue) {
+            _instantiatedVariables.update(doc.data['value'], (v) => v,
+                ifAbsent: () => onValue.data['defaultValue'].round());
+            setState(() {});
+          });
           newCanvasItems.addCanvasItem(
               doc.documentID,
-              CanvasItem.text(doc.data['value'],
+              CanvasItem.variable(doc.data['value'],
                   left: doc.data['left'].toDouble(),
                   top: doc.data['top'].toDouble()));
         }
@@ -90,14 +72,19 @@ class MyStateApp extends State {
         child: Scaffold(
       body: Container(
           child: Row(children: [
-        Expanded(child: Stack(children: _canvasItems.getPositionedList())),
+        Expanded(
+            child: Stack(
+                children:
+                    _canvasItems.getPositionedList(_instantiatedVariables))),
         Container(
             width: 300,
             color: Colors.yellow,
             child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Expanded(child: getCanvasItemListView(_canvasItems)),
+                  Expanded(
+                      child: getCanvasItemListView(
+                          _canvasItems, _instantiatedVariables)),
                   FlatButton(
                     color: Colors.redAccent,
                     onPressed: () {
@@ -232,7 +219,6 @@ class MyStateApp extends State {
                   hint: new Text("Select a Variable"),
                   value: _selectedVariableId,
                   onChanged: (String newValue) {
-                    print(newValue);
                     setState(() {
                       _selectedVariableId = newValue;
                     });
@@ -316,7 +302,8 @@ class MyStateApp extends State {
   }
 }
 
-getCanvasItemListView(CanvasItems canvasItems) {
+getCanvasItemListView(
+    CanvasItems canvasItems, Map<String, int> _instantiatedVariables) {
   return ListView(
       children: canvasItems.canvasItemMap.keys
           .map((key) => Container(
@@ -328,9 +315,7 @@ getCanvasItemListView(CanvasItems canvasItems) {
                         child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(
-                                key,
-                              ),
+                              Text(key),
                               MaterialButton(
                                 height: 50.0,
                                 minWidth: 50.0,
@@ -367,49 +352,4 @@ getVariableListView(Map<String, Map<String, dynamic>> variables) {
       Divider(height: 4)
     ]));
   }).toList());
-}
-
-class CanvasItems {
-  final canvasItemMap = Map<String, CanvasItem>();
-  var uuidCounter = 0;
-
-  List getPositionedList() {
-    List<Positioned> positionedList = [];
-    canvasItemMap.values.forEach((item) => positionedList.add(item.positioned));
-    return positionedList;
-  }
-
-  List getKeyTextList() {
-    List<Widget> widgets = [];
-    canvasItemMap.keys.forEach((key) => widgets.add(Text(key)));
-    return widgets;
-  }
-
-  void addCanvasItem(String key, CanvasItem item) {
-    canvasItemMap.update(key, (v) => item, ifAbsent: () => item);
-  }
-}
-
-enum CanvasItemType { Text, Image, Variable }
-
-class CanvasItem {
-  Positioned positioned;
-  CanvasItemType type;
-  var value;
-
-  CanvasItem.text(String text,
-      {double top, double bottom, double left, double right}) {
-    this.value = text;
-    this.positioned = Positioned(
-        top: top,
-        bottom: bottom,
-        left: left,
-        right: right,
-        child: Text(this.value));
-    this.type = CanvasItemType.Text;
-  }
-
-  editCanvasItem(BuildContext context) {
-    showDialog(context: context);
-  }
 }

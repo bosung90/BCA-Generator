@@ -25,6 +25,15 @@ class CanvasItems {
             child: Text(_instantiatedVariables[item.value].toString()),
           ));
           break;
+        case CanvasItemType.Button:
+          positionedList.add(Positioned(
+            top: item.position['top'],
+            left: item.position['left'],
+            right: item.position['right'],
+            bottom: item.position['bottom'],
+            child: MaterialButton(onPressed: () {}, child: Text('B')),
+          ));
+          break;
         default:
           break;
       }
@@ -43,7 +52,7 @@ class CanvasItems {
   }
 }
 
-enum CanvasItemType { Text, Image, Variable }
+enum CanvasItemType { Text, Image, Variable, Button }
 
 class CanvasItem {
   Map<String, double> position = Map();
@@ -60,6 +69,18 @@ class CanvasItem {
       'right': right
     };
     this.type = CanvasItemType.Variable;
+  }
+
+  CanvasItem.button(String functionKey,
+      {double top, double bottom, double left, double right}) {
+    this.value = functionKey;
+    this.position = {
+      'top': top,
+      'bottom': bottom,
+      'left': left,
+      'right': right
+    };
+    this.type = CanvasItemType.Button;
   }
 
   CanvasItem.text(String text,

@@ -4,10 +4,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import './firestoreRefs.dart';
 import './canvasItems.dart';
 
-// 1. When Variable is added, create stateValue with defaultValue
-// 2. When rendering Variable on Canvas, print stateValue
-// 3. Ability to Create new Variable with defaultValue
-// 4. CanvasItemList show value for Text, and id for variable
+// CanvasItemList show value for Text, and id for variable
+// Put name list label on top of canvasItems and variable list items
 
 main() {
   Firestore.instance.settings(timestampsInSnapshotsEnabled: true);
@@ -47,6 +45,12 @@ class MyStateApp extends State {
           newCanvasItems.addCanvasItem(
               doc.documentID,
               CanvasItem.variable(doc.data['value'],
+                  left: doc.data['left'].toDouble(),
+                  top: doc.data['top'].toDouble()));
+        } else if (doc.data['type'] == 'Button') {
+          newCanvasItems.addCanvasItem(
+              doc.documentID,
+              CanvasItem.button(doc.data['value'],
                   left: doc.data['left'].toDouble(),
                   top: doc.data['top'].toDouble()));
         }
@@ -123,6 +127,22 @@ class MyStateApp extends State {
                                 style: TextStyle(
                                     color: Colors.white,
                                     fontWeight: FontWeight.bold)),
+                          ),
+                          FlatButton(
+                            color: Colors.teal,
+                            onPressed: _showCreateVariableDialog,
+                            child: Text('CREATE VARIABLE',
+                                style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold)),
+                          ),
+                          FlatButton(
+                            color: Colors.orange,
+                            onPressed: _showCreateButtonFunctionDialog,
+                            child: Text('CREATE BUTTON FUNCTION',
+                                style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold)),
                           )
                         ],
                       ))),
@@ -149,6 +169,10 @@ class MyStateApp extends State {
     final canvasItemsCollection = getCanvasItemsCollection();
     canvasItemsCollection.add(
         {'left': left, 'top': top, 'type': 'Variable', 'value': variableKey});
+  }
+
+  _createVariable(int defaultValue) {
+    getVariablesCollection().add({'defaultValue': defaultValue});
   }
 
   Future<void> _showAddTextDialog() async {
@@ -274,6 +298,7 @@ class MyStateApp extends State {
             child: ListBody(
               children: [
                 TextField(
+                  autofocus: true,
                   controller: defaultValueTextFieldController,
                   keyboardType: TextInputType.numberWithOptions(
                       signed: false, decimal: false),
@@ -289,9 +314,10 @@ class MyStateApp extends State {
               textColor: Colors.grey,
             ),
             FlatButton(
-              child: Text('Add'),
+              child: Text('Create'),
               onPressed: () {
-                _addVariable(defaultValueTextFieldController.text);
+                _createVariable(
+                    int.parse(defaultValueTextFieldController.text));
                 Navigator.of(context).pop();
               },
             ),
@@ -299,6 +325,121 @@ class MyStateApp extends State {
         );
       },
     );
+  }
+
+  Future<void> _showCreateButtonFunctionDialog() async {
+    final topTextFieldController = TextEditingController();
+    final leftTextFieldController = TextEditingController();
+    String _selectedTargetVariableId;
+    String _selectedVariable1Id;
+    String _selectedVariable2Id;
+    String _selectedArithmetic;
+    return showDialog<void>(
+        context: context,
+        builder: (BuildContext context) {
+          return StatefulBuilder(
+            builder: (context, setState) {
+              return AlertDialog(
+                content: SingleChildScrollView(
+                  child: ListBody(
+                    children: [
+                      DropdownButton<String>(
+                          hint: new Text("Select a Target Variable"),
+                          value: _selectedTargetVariableId,
+                          onChanged: (String newValue) {
+                            setState(() {
+                              _selectedTargetVariableId = newValue;
+                            });
+                          },
+                          items: _variables.keys.map((key) {
+                            return DropdownMenuItem<String>(
+                                value: key, child: Text(key));
+                          }).toList()),
+                      DropdownButton<String>(
+                          hint: new Text("Select a Variable1"),
+                          value: _selectedVariable1Id,
+                          onChanged: (String newValue) {
+                            setState(() {
+                              _selectedVariable1Id = newValue;
+                            });
+                          },
+                          items: _variables.keys.map((key) {
+                            return DropdownMenuItem<String>(
+                                value: key, child: Text(key));
+                          }).toList()),
+                      DropdownButton<String>(
+                          hint: new Text("Select an Arithmetic"),
+                          value: _selectedArithmetic,
+                          onChanged: (String newValue) {
+                            setState(() {
+                              _selectedArithmetic = newValue;
+                            });
+                          },
+                          items: ['+', '-', '*', '/']
+                              .map((key) => DropdownMenuItem<String>(
+                                  value: key, child: Text(key)))
+                              .toList()),
+                      DropdownButton<String>(
+                          hint: new Text("Select a Variable2"),
+                          value: _selectedVariable2Id,
+                          onChanged: (String newValue) {
+                            setState(() {
+                              _selectedVariable2Id = newValue;
+                            });
+                          },
+                          items: _variables.keys.map((key) {
+                            return DropdownMenuItem<String>(
+                                value: key, child: Text(key));
+                          }).toList()),
+                      TextField(
+                        autofocus: true,
+                        controller: leftTextFieldController,
+                        keyboardType: TextInputType.numberWithOptions(
+                            signed: false, decimal: false),
+                        decoration: InputDecoration(labelText: "X"),
+                      ),
+                      TextField(
+                        autofocus: true,
+                        controller: topTextFieldController,
+                        keyboardType: TextInputType.numberWithOptions(
+                            signed: false, decimal: false),
+                        decoration: InputDecoration(labelText: "Y"),
+                      ),
+                    ],
+                  ),
+                ),
+                actions: [
+                  FlatButton(
+                    child: Text('Cancel'),
+                    onPressed: Navigator.of(context).pop,
+                    textColor: Colors.grey,
+                  ),
+                  FlatButton(
+                    child: Text('Create'),
+                    onPressed: () {
+                      getFunctionsCollection().add({
+                        'arithmetic': _selectedArithmetic,
+                        'targetVariable': _selectedTargetVariableId,
+                        'variable1': _selectedVariable1Id,
+                        'variable2': _selectedVariable2Id,
+                      }).then((docRef) {
+                        getCanvasItemsCollection().add({
+                          'left': double.parse(leftTextFieldController.text),
+                          'top': double.parse(topTextFieldController.text),
+                          'type': 'Button',
+                          'value': docRef.documentID
+                        });
+                      });
+                      // _createButtonFunction(
+                      //     int.parse(defaultValueTextFieldController.text));
+                      Navigator.of(context).pop();
+                    },
+                  ),
+                ],
+              );
+            },
+          );
+        });
   }
 }
 

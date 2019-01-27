@@ -33,3 +33,17 @@ DocumentReference getVariableDocument(
         .document(gameId)
         .collection('Variables')
         .document(variableId);
+
+CollectionReference getFunctionsCollection({String gameId = GAME_ID}) =>
+    Firestore.instance
+        .collection('Games')
+        .document(gameId)
+        .collection('Functions');
+
+DocumentReference getFunctionDocument(
+        {String gameId = GAME_ID, String functionId}) =>
+    Firestore.instance
+        .collection('Games')
+        .document(gameId)
+        .collection('Functions')
+        .document(functionId);

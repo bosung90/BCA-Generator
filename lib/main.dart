@@ -90,7 +90,7 @@ class MyStateApp extends State {
         Expanded(
             child: Stack(
                 children: _canvasItems.getPositionedList(
-                    _instantiatedVariables, _btnOnPressed))),
+                    _instantiatedVariables, _btnOnPressed, _onDragEnd))),
         Container(
             width: 300,
             color: Colors.yellow,
@@ -167,6 +167,11 @@ class MyStateApp extends State {
         ),
       ])),
     ));
+  }
+
+  _onDragEnd(String key, double x, double y) {
+    print('$key $x $y');
+    getCanvasItemDocument(canvasItemId: key).updateData({'left': x, 'top': y});
   }
 
   _btnOnPressed(String functionKey) {

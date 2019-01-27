@@ -4,9 +4,10 @@ class CanvasItems {
   final canvasItemMap = Map<String, CanvasItem>();
 
   List getPositionedList(
-      Map<String, int> _instantiatedVariables, btnOnPressed) {
+      Map<String, int> _instantiatedVariables, btnOnPressed, onDragEnd) {
     List<Positioned> positionedList = [];
-    canvasItemMap.values.forEach((item) {
+    canvasItemMap.keys.forEach((key) {
+      final item = canvasItemMap[key];
       switch (item.type) {
         case CanvasItemType.Text:
           positionedList.add(Positioned(
@@ -14,7 +15,18 @@ class CanvasItems {
             left: item.position['left'],
             right: item.position['right'],
             bottom: item.position['bottom'],
-            child: Text(item.value),
+            child: Draggable(
+                child: Text(item.value),
+                feedback: Material(
+                    type: MaterialType.transparency,
+                    child: Scaffold(
+                        body: Text(item.value,
+                            style:
+                                TextStyle(fontSize: 20, color: Colors.black)))),
+                childWhenDragging: Container(),
+                onDragEnd: (details) {
+                  onDragEnd(key, details.offset.dx, details.offset.dy);
+                }),
           ));
           break;
         case CanvasItemType.Variable:
@@ -23,7 +35,13 @@ class CanvasItems {
             left: item.position['left'],
             right: item.position['right'],
             bottom: item.position['bottom'],
-            child: Text(_instantiatedVariables[item.value].toString()),
+            child: Draggable(
+                child: Text(_instantiatedVariables[item.value].toString()),
+                feedback: Text(_instantiatedVariables[item.value].toString()),
+                childWhenDragging: Container(),
+                onDragEnd: (details) {
+                  onDragEnd(key, details.offset.dx, details.offset.dy);
+                }),
           ));
           break;
         case CanvasItemType.Button:
@@ -32,12 +50,23 @@ class CanvasItems {
             left: item.position['left'],
             right: item.position['right'],
             bottom: item.position['bottom'],
-            child: MaterialButton(
-                color: Colors.grey,
-                onPressed: () {
-                  btnOnPressed(item.value);
-                },
-                child: Text('Button')),
+            child: Draggable(
+                child: MaterialButton(
+                    color: Colors.grey,
+                    onPressed: () {
+                      btnOnPressed(item.value);
+                    },
+                    child: Text('Button')),
+                feedback: MaterialButton(
+                    color: Colors.grey,
+                    onPressed: () {
+                      btnOnPressed(item.value);
+                    },
+                    child: Text('Button')),
+                childWhenDragging: Container(),
+                onDragEnd: (details) {
+                  onDragEnd(key, details.offset.dx, details.offset.dy);
+                }),
           ));
           break;
         default:

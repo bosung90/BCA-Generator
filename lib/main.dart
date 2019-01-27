@@ -26,9 +26,31 @@ CollectionReference getCanvasItemsCollection({String gameId = GAME_ID}) =>
         .collection('Games')
         .document(gameId)
         .collection('CanvasItems');
+DocumentReference getCanvasItemDocument(
+        {String gameId = GAME_ID, String canvasItemId}) =>
+    Firestore.instance
+        .collection('Games')
+        .document(gameId)
+        .collection('CanvasItems')
+        .document(canvasItemId);
+
+CollectionReference getVariablesCollection({String gameId = GAME_ID}) =>
+    Firestore.instance
+        .collection('Games')
+        .document(gameId)
+        .collection('Variables');
+
+DocumentReference getVariableDocument(
+        {String gameId = GAME_ID, String variableId}) =>
+    Firestore.instance
+        .collection('Games')
+        .document(gameId)
+        .collection('Variables')
+        .document(variableId);
 
 class MyStateApp extends State {
   var _canvasItems = CanvasItems();
+  Map<String, Map<String, dynamic>> _variables = Map();
 
   MyStateApp() {
     getCanvasItemsCollection().snapshots().listen((data) {
@@ -46,6 +68,16 @@ class MyStateApp extends State {
         _canvasItems = newCanvasItems;
       });
     });
+    getVariablesCollection().snapshots().listen((data) {
+      final newVariables = Map<String, Map<String, dynamic>>();
+      data.documents.forEach((doc) {
+        newVariables.update(doc.documentID, (v) => doc.data,
+            ifAbsent: () => doc.data);
+      });
+      setState(() {
+        _variables = newVariables;
+      });
+    });
   }
 
   Widget build(BuildContext context) {
@@ -55,13 +87,13 @@ class MyStateApp extends State {
           child: Row(children: [
         Expanded(child: Stack(children: _canvasItems.getPositionedList())),
         Container(
-            width: 270,
-            padding: EdgeInsets.all(10),
+            width: 300,
+            // padding: EdgeInsets.all(10),
             color: Colors.yellow,
             child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Expanded(child: getListView(_canvasItems)),
+                  Expanded(child: getCanvasItemListView(_canvasItems)),
                   FlatButton(
                     color: Colors.redAccent,
                     onPressed: () {
@@ -75,7 +107,7 @@ class MyStateApp extends State {
                   )
                 ])),
         Container(
-          width: 270,
+          width: 300,
           color: Colors.grey,
           child: Column(
             children: [
@@ -103,7 +135,10 @@ class MyStateApp extends State {
                           )
                         ],
                       ))),
-              Container(height: 300, color: Colors.white)
+              Container(
+                  height: 300,
+                  color: Colors.white,
+                  child: getVariableListView(_variables))
             ],
           ),
         ),
@@ -118,40 +153,11 @@ class MyStateApp extends State {
         .add({'left': left, 'top': top, 'type': 'Text', 'value': text});
   }
 
-  Future<void> _showAddVariableDialog() async {
-    final defaultValueTextFieldController = TextEditingController();
-    return showDialog<void>(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          content: SingleChildScrollView(
-            child: ListBody(
-              children: [
-                TextField(
-                  controller: defaultValueTextFieldController,
-                  keyboardType: TextInputType.number,
-                  decoration: InputDecoration(labelText: "Text"),
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            FlatButton(
-              child: Text('Cancel'),
-              onPressed: Navigator.of(context).pop,
-              textColor: Colors.grey,
-            ),
-            FlatButton(
-              child: Text('Add'),
-              onPressed: () {
-                _addText(defaultValueTextFieldController.text);
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      },
-    );
+  _addVariable(String variableKey,
+      {double top, double bottom, double left, double right}) {
+    final canvasItemsCollection = getCanvasItemsCollection();
+    canvasItemsCollection.add(
+        {'left': left, 'top': top, 'type': 'Variable', 'value': variableKey});
   }
 
   Future<void> _showAddTextDialog() async {
@@ -173,10 +179,14 @@ class MyStateApp extends State {
                 ),
                 TextField(
                   controller: leftTextFieldController,
+                  keyboardType: TextInputType.numberWithOptions(
+                      signed: false, decimal: false),
                   decoration: InputDecoration(labelText: "x"),
                 ),
                 TextField(
                   controller: topTextFieldController,
+                  keyboardType: TextInputType.numberWithOptions(
+                      signed: false, decimal: false),
                   decoration: InputDecoration(labelText: "y"),
                 )
               ],
@@ -202,9 +212,83 @@ class MyStateApp extends State {
       },
     );
   }
+
+  Future<void> _showAddVariableDialog() async {
+    final defaultValueTextFieldController = TextEditingController();
+    return showDialog<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: [
+                TextField(
+                  controller: defaultValueTextFieldController,
+                  keyboardType: TextInputType.numberWithOptions(
+                      signed: false, decimal: false),
+                  decoration: InputDecoration(labelText: "Default Value"),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            FlatButton(
+              child: Text('Cancel'),
+              onPressed: Navigator.of(context).pop,
+              textColor: Colors.grey,
+            ),
+            FlatButton(
+              child: Text('Add'),
+              onPressed: () {
+                _addVariable(defaultValueTextFieldController.text);
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _showCreateVariableDialog() async {
+    final defaultValueTextFieldController = TextEditingController();
+    return showDialog<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: [
+                TextField(
+                  controller: defaultValueTextFieldController,
+                  keyboardType: TextInputType.numberWithOptions(
+                      signed: false, decimal: false),
+                  decoration: InputDecoration(labelText: "Default Value"),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            FlatButton(
+              child: Text('Cancel'),
+              onPressed: Navigator.of(context).pop,
+              textColor: Colors.grey,
+            ),
+            FlatButton(
+              child: Text('Add'),
+              onPressed: () {
+                _addVariable(defaultValueTextFieldController.text);
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
 }
 
-getListView(CanvasItems canvasItems) {
+getCanvasItemListView(CanvasItems canvasItems) {
   return ListView(
       padding: EdgeInsets.only(top: 10, bottom: 10),
       children: canvasItems.canvasItemMap.keys
@@ -221,13 +305,41 @@ getListView(CanvasItems canvasItems) {
                                 key,
                               ),
                               RawMaterialButton(
-                                onPressed: () => null,
-                                child: Text('Edit'),
+                                onPressed:
+                                    getCanvasItemDocument(canvasItemId: key)
+                                        .delete,
+                                child: Text('X'),
                               )
                             ])),
                     Divider()
                   ])))
           .toList());
+}
+
+getVariableListView(Map<String, Map<String, dynamic>> variables) {
+  print(variables);
+  return ListView(
+      padding: EdgeInsets.only(top: 10, bottom: 10),
+      children: variables.keys.map((key) {
+        return Container(
+            child:
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Container(
+              padding: EdgeInsets.only(left: 20, right: 20),
+              child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      key,
+                    ),
+                    RawMaterialButton(
+                      onPressed: getVariableDocument(variableId: key).delete,
+                      child: Text('X'),
+                    )
+                  ])),
+          Divider()
+        ]));
+      }).toList());
 }
 
 class CanvasItems {

@@ -55,56 +55,58 @@ class MyStateApp extends State {
           child: Row(children: [
         Expanded(child: Stack(children: _canvasItems.getPositionedList())),
         Container(
-            width: 270, color: Colors.yellow, child: getListView(_canvasItems)),
-        Container(
             width: 270,
-            color: Colors.grey,
-            child: Center(
-              child: Column(
+            padding: EdgeInsets.all(10),
+            color: Colors.yellow,
+            child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Expanded(
-                      child: Container(
-                          color: Colors.lightBlueAccent,
-                          padding: EdgeInsets.all(10),
-                          child: Column(
-                            children: [
-                              FlatButton(
-                                color: Colors.cyan,
-                                materialTapTargetSize:
-                                    MaterialTapTargetSize.shrinkWrap,
-                                onPressed: _showAddTextDialog,
-                                child: Text('Add Text'),
-                              )
-                            ],
-                          ))),
-                  Row(children: [
-                    Expanded(
-                        child: FlatButton(
-                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      color: Colors.blueAccent,
-                      onPressed: () {
-                        _canvasItems.getKeyTextList().forEach((key) {
-                          print(key.data);
-                          getCanvasItemsCollection()
-                              .document(key.data)
-                              .delete();
-                        });
-                      },
-                      child: Text('CLEAR ALL'),
-                    )),
-                    // Expanded(
-                    //     child: FlatButton(
-                    //   materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    //   color: Colors.redAccent,
-                    //   onPressed: () {
-                    //   },
-                    //   child: Text('Save'),
-                    // ))
-                  ]),
-                  Container(height: 300, color: Colors.white)
-                ],
-              ),
-            )),
+                  Expanded(child: getListView(_canvasItems)),
+                  FlatButton(
+                    color: Colors.redAccent,
+                    onPressed: () {
+                      _canvasItems.getKeyTextList().forEach((key) {
+                        getCanvasItemsCollection().document(key.data).delete();
+                      });
+                    },
+                    child: Text('CLEAR ALL',
+                        style: TextStyle(
+                            color: Colors.white, fontWeight: FontWeight.bold)),
+                  )
+                ])),
+        Container(
+          width: 270,
+          color: Colors.grey,
+          child: Column(
+            children: [
+              Expanded(
+                  child: Container(
+                      color: Colors.lightBlueAccent,
+                      padding: EdgeInsets.all(10),
+                      child: ListView(
+                        children: [
+                          FlatButton(
+                            color: Colors.cyan,
+                            onPressed: _showAddTextDialog,
+                            child: Text('ADD TEXT',
+                                style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold)),
+                          ),
+                          FlatButton(
+                            color: Colors.blueAccent,
+                            onPressed: _showAddVariableDialog,
+                            child: Text('ADD VARIABLE',
+                                style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold)),
+                          )
+                        ],
+                      ))),
+              Container(height: 300, color: Colors.white)
+            ],
+          ),
+        ),
       ])),
     ));
   }
@@ -114,6 +116,42 @@ class MyStateApp extends State {
     final canvasItemsCollection = getCanvasItemsCollection();
     canvasItemsCollection
         .add({'left': left, 'top': top, 'type': 'Text', 'value': text});
+  }
+
+  Future<void> _showAddVariableDialog() async {
+    final defaultValueTextFieldController = TextEditingController();
+    return showDialog<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: [
+                TextField(
+                  controller: defaultValueTextFieldController,
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(labelText: "Text"),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            FlatButton(
+              child: Text('Cancel'),
+              onPressed: Navigator.of(context).pop,
+              textColor: Colors.grey,
+            ),
+            FlatButton(
+              child: Text('Add'),
+              onPressed: () {
+                _addText(defaultValueTextFieldController.text);
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
   Future<void> _showAddTextDialog() async {
@@ -129,6 +167,7 @@ class MyStateApp extends State {
             child: ListBody(
               children: [
                 TextField(
+                  autofocus: true,
                   controller: nameTextFieldController,
                   decoration: InputDecoration(labelText: "Text"),
                 ),

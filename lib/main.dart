@@ -35,9 +35,11 @@ class MyStateApp extends State {
       final newCanvasItems = CanvasItems();
       data.documents.forEach((doc) {
         if (doc.data['type'] == 'Text') {
-          newCanvasItems.addCanvasItem(CanvasItem.text(doc.data['value'],
-              left: doc.data['left'].toDouble(),
-              top: doc.data['top'].toDouble()));
+          newCanvasItems.addCanvasItem(
+              doc.documentID,
+              CanvasItem.text(doc.data['value'],
+                  left: doc.data['left'].toDouble(),
+                  top: doc.data['top'].toDouble()));
         }
       });
       setState(() {
@@ -75,30 +77,30 @@ class MyStateApp extends State {
                               )
                             ],
                           ))),
-                  // Row(children: [
-                  //   Expanded(
-                  //       child: FlatButton(
-                  //     materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  //     color: Colors.blueAccent,
-                  //     onPressed: () {
-                  //       Firestore.instance
-                  //           .collection('Books')
-                  //           .add({'title': 'title', 'author': 'author'});
-                  //     },
-                  //     child: Text('Load'),
-                  //   )),
-                  //   Expanded(
-                  //       child: FlatButton(
-                  //     materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  //     color: Colors.redAccent,
-                  //     onPressed: () {
-                  //       Firestore.instance
-                  //           .collection('Books')
-                  //           .add({'title': 'title', 'author': 'author'});
-                  //     },
-                  //     child: Text('Save'),
-                  //   ))
-                  // ]),
+                  Row(children: [
+                    Expanded(
+                        child: FlatButton(
+                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      color: Colors.blueAccent,
+                      onPressed: () {
+                        _canvasItems.getKeyTextList().forEach((key) {
+                          print(key.data);
+                          getCanvasItemsCollection()
+                              .document(key.data)
+                              .delete();
+                        });
+                      },
+                      child: Text('CLEAR ALL'),
+                    )),
+                    // Expanded(
+                    //     child: FlatButton(
+                    //   materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    //   color: Colors.redAccent,
+                    //   onPressed: () {
+                    //   },
+                    //   child: Text('Save'),
+                    // ))
+                  ]),
                   Container(height: 300, color: Colors.white)
                 ],
               ),
@@ -205,9 +207,8 @@ class CanvasItems {
     return widgets;
   }
 
-  void addCanvasItem(CanvasItem item) {
-    final canvasItemKey = (uuidCounter++).toString();
-    canvasItemMap.update(canvasItemKey, (v) => item, ifAbsent: () => item);
+  void addCanvasItem(String key, CanvasItem item) {
+    canvasItemMap.update(key, (v) => item, ifAbsent: () => item);
   }
 }
 

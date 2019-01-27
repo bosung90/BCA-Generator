@@ -4,6 +4,8 @@ import 'package:flutter/widgets.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 main() {
+  Firestore.instance.settings(timestampsInSnapshotsEnabled: true);
+
   runApp(MaterialApp(
     home: MyApp(),
   ));
@@ -13,14 +15,35 @@ class MyApp extends StatefulWidget {
   MyStateApp createState() => MyStateApp();
 }
 
+const GAME_ID = 'Gv3sMVfwTtQr66XaP9vr';
+
+CollectionReference getGamesCollection() =>
+    Firestore.instance.collection('Games');
+DocumentReference getGameDocument({String gameId = GAME_ID}) =>
+    Firestore.instance.collection('Games').document(gameId);
+CollectionReference getCanvasItemsCollection({String gameId = GAME_ID}) =>
+    Firestore.instance
+        .collection('Games')
+        .document(gameId)
+        .collection('CanvasItems');
+
 class MyStateApp extends State {
-  final canvasItems = CanvasItems();
+  var _canvasItems = CanvasItems();
 
   MyStateApp() {
-    // Firestore.instance
-    //     .collection('books')
-    //     .document()
-    //     .setData({'title': 'title', 'author': 'author'});
+    getCanvasItemsCollection().snapshots().listen((data) {
+      final newCanvasItems = CanvasItems();
+      data.documents.forEach((doc) {
+        if (doc.data['type'] == 'Text') {
+          newCanvasItems.addCanvasItem(CanvasItem.text(doc.data['value'],
+              left: doc.data['left'].toDouble(),
+              top: doc.data['top'].toDouble()));
+        }
+      });
+      setState(() {
+        _canvasItems = newCanvasItems;
+      });
+    });
   }
 
   Widget build(BuildContext context) {
@@ -28,9 +51,9 @@ class MyStateApp extends State {
         child: Scaffold(
       body: Container(
           child: Row(children: [
-        Expanded(child: Stack(children: canvasItems.getPositionedList())),
+        Expanded(child: Stack(children: _canvasItems.getPositionedList())),
         Container(
-            width: 270, color: Colors.yellow, child: getListView(canvasItems)),
+            width: 270, color: Colors.yellow, child: getListView(_canvasItems)),
         Container(
             width: 270,
             color: Colors.grey,
@@ -52,22 +75,30 @@ class MyStateApp extends State {
                               )
                             ],
                           ))),
-                  Row(children: [
-                    Expanded(
-                        child: FlatButton(
-                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      color: Colors.blueAccent,
-                      onPressed: _showAddTextDialog,
-                      child: Text('Load'),
-                    )),
-                    Expanded(
-                        child: FlatButton(
-                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      color: Colors.redAccent,
-                      onPressed: _showAddTextDialog,
-                      child: Text('Save'),
-                    ))
-                  ]),
+                  // Row(children: [
+                  //   Expanded(
+                  //       child: FlatButton(
+                  //     materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  //     color: Colors.blueAccent,
+                  //     onPressed: () {
+                  //       Firestore.instance
+                  //           .collection('Books')
+                  //           .add({'title': 'title', 'author': 'author'});
+                  //     },
+                  //     child: Text('Load'),
+                  //   )),
+                  //   Expanded(
+                  //       child: FlatButton(
+                  //     materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  //     color: Colors.redAccent,
+                  //     onPressed: () {
+                  //       Firestore.instance
+                  //           .collection('Books')
+                  //           .add({'title': 'title', 'author': 'author'});
+                  //     },
+                  //     child: Text('Save'),
+                  //   ))
+                  // ]),
                   Container(height: 300, color: Colors.white)
                 ],
               ),
@@ -80,7 +111,7 @@ class MyStateApp extends State {
       {double top, double bottom, double left, double right}) {
     final canvasItem = CanvasItem.text(text,
         top: top, bottom: bottom, left: left, right: right);
-    canvasItems.addCanvasItem(canvasItem);
+    _canvasItems.addCanvasItem(canvasItem);
     setState(() {});
   }
 
@@ -175,7 +206,7 @@ class CanvasItems {
     return widgets;
   }
 
-  addCanvasItem(CanvasItem item) {
+  void addCanvasItem(CanvasItem item) {
     final canvasItemKey = (uuidCounter++).toString();
     canvasItemMap.update(canvasItemKey, (v) => item, ifAbsent: () => item);
   }

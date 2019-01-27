@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-// import 'package:english_words/english_words.dart';
 import 'package:flutter/widgets.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -62,6 +61,12 @@ class MyStateApp extends State {
               CanvasItem.text(doc.data['value'],
                   left: doc.data['left'].toDouble(),
                   top: doc.data['top'].toDouble()));
+        } else if (doc.data['type'] == 'Variable') {
+          newCanvasItems.addCanvasItem(
+              doc.documentID,
+              CanvasItem.text(doc.data['value'],
+                  left: doc.data['left'].toDouble(),
+                  top: doc.data['top'].toDouble()));
         }
       });
       setState(() {
@@ -88,7 +93,6 @@ class MyStateApp extends State {
         Expanded(child: Stack(children: _canvasItems.getPositionedList())),
         Container(
             width: 300,
-            // padding: EdgeInsets.all(10),
             color: Colors.yellow,
             child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -214,38 +218,62 @@ class MyStateApp extends State {
   }
 
   Future<void> _showAddVariableDialog() async {
-    final defaultValueTextFieldController = TextEditingController();
+    final topTextFieldController = TextEditingController();
+    final leftTextFieldController = TextEditingController();
+    String _selectedVariableId;
     return showDialog<void>(
       context: context,
       builder: (BuildContext context) {
-        return AlertDialog(
-          content: SingleChildScrollView(
-            child: ListBody(
-              children: [
-                TextField(
-                  controller: defaultValueTextFieldController,
-                  keyboardType: TextInputType.numberWithOptions(
-                      signed: false, decimal: false),
-                  decoration: InputDecoration(labelText: "Default Value"),
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            FlatButton(
-              child: Text('Cancel'),
-              onPressed: Navigator.of(context).pop,
-              textColor: Colors.grey,
-            ),
-            FlatButton(
-              child: Text('Add'),
-              onPressed: () {
-                _addVariable(defaultValueTextFieldController.text);
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
+        return StatefulBuilder(builder: (context, setState) {
+          return AlertDialog(
+            content: SingleChildScrollView(
+                child: ListBody(children: [
+              DropdownButton<String>(
+                  hint: new Text("Select a Variable"),
+                  value: _selectedVariableId,
+                  onChanged: (String newValue) {
+                    print(newValue);
+                    setState(() {
+                      _selectedVariableId = newValue;
+                    });
+                  },
+                  items: _variables.keys.map((key) {
+                    return DropdownMenuItem<String>(
+                        value: key, child: Text(key));
+                  }).toList()),
+              TextField(
+                controller: leftTextFieldController,
+                keyboardType: TextInputType.numberWithOptions(
+                    signed: false, decimal: false),
+                decoration: InputDecoration(labelText: "x"),
+              ),
+              TextField(
+                controller: topTextFieldController,
+                keyboardType: TextInputType.numberWithOptions(
+                    signed: false, decimal: false),
+                decoration: InputDecoration(labelText: "y"),
+              )
+            ])),
+            actions: [
+              FlatButton(
+                child: Text('Cancel'),
+                onPressed: Navigator.of(context).pop,
+                textColor: Colors.grey,
+              ),
+              FlatButton(
+                child: Text('Add'),
+                onPressed: () {
+                  if (_selectedVariableId != null) {
+                    _addVariable(_selectedVariableId,
+                        top: double.parse(topTextFieldController.text),
+                        left: double.parse(leftTextFieldController.text));
+                  }
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          );
+        });
       },
     );
   }
@@ -290,7 +318,6 @@ class MyStateApp extends State {
 
 getCanvasItemListView(CanvasItems canvasItems) {
   return ListView(
-      padding: EdgeInsets.only(top: 10, bottom: 10),
       children: canvasItems.canvasItemMap.keys
           .map((key) => Container(
                   child: Column(
@@ -304,42 +331,42 @@ getCanvasItemListView(CanvasItems canvasItems) {
                               Text(
                                 key,
                               ),
-                              RawMaterialButton(
+                              MaterialButton(
+                                height: 50.0,
+                                minWidth: 50.0,
                                 onPressed:
                                     getCanvasItemDocument(canvasItemId: key)
                                         .delete,
                                 child: Text('X'),
                               )
                             ])),
-                    Divider()
+                    Divider(height: 4)
                   ])))
           .toList());
 }
 
 getVariableListView(Map<String, Map<String, dynamic>> variables) {
-  print(variables);
   return ListView(
-      padding: EdgeInsets.only(top: 10, bottom: 10),
       children: variables.keys.map((key) {
-        return Container(
-            child:
-                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Container(
-              padding: EdgeInsets.only(left: 20, right: 20),
-              child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      key,
-                    ),
-                    RawMaterialButton(
-                      onPressed: getVariableDocument(variableId: key).delete,
-                      child: Text('X'),
-                    )
-                  ])),
-          Divider()
-        ]));
-      }).toList());
+    return Container(
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Container(
+          padding: EdgeInsets.only(left: 20, right: 20),
+          child:
+              Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+            Text(
+              key,
+            ),
+            MaterialButton(
+              height: 50.0,
+              minWidth: 50.0,
+              onPressed: getVariableDocument(variableId: key).delete,
+              child: Text('X'),
+            )
+          ])),
+      Divider(height: 4)
+    ]));
+  }).toList());
 }
 
 class CanvasItems {
@@ -386,46 +413,3 @@ class CanvasItem {
     showDialog(context: context);
   }
 }
-
-// class RandomWordsState extends State<RandomWords> {
-//   final _suggestions = <WordPair>[];
-//   final _biggerFont = const TextStyle(fontSize: 18.0);
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(
-//         title: Text('Startup Name Generator'),
-//       ),
-//       body: _buildSuggestions(),
-//     );
-//   }
-
-//   Widget _buildSuggestions() {
-//     return ListView.builder(
-//         padding: const EdgeInsets.all(16.0),
-//         itemBuilder: /*1*/ (context, i) {
-//           if (i.isOdd) return Divider(); /*2*/
-
-//           final index = i ~/ 2; /*3*/
-//           if (index >= _suggestions.length) {
-//             _suggestions.addAll(generateWordPairs().take(10)); /*4*/
-//           }
-//           return _buildRow(_suggestions[index]);
-//         });
-//   }
-
-//   Widget _buildRow(WordPair pair) {
-//     return ListTile(
-//       title: Text(
-//         pair.asPascalCase,
-//         style: _biggerFont,
-//       ),
-//     );
-//   }
-// }
-
-// class RandomWords extends StatefulWidget {
-//   @override
-//   RandomWordsState createState() => RandomWordsState();
-// }

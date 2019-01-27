@@ -160,7 +160,8 @@ class MyStateApp extends State {
               Container(
                   height: 300,
                   color: Colors.white,
-                  child: getVariableListView(_variables))
+                  child:
+                      getVariableListView(_variables, _instantiatedVariables))
             ],
           ),
         ),
@@ -496,34 +497,48 @@ class MyStateApp extends State {
 getCanvasItemListView(
     CanvasItems canvasItems, Map<String, int> _instantiatedVariables) {
   return ListView(
-      children: canvasItems.canvasItemMap.keys
-          .map((key) => Container(
-                  child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                    Container(
-                        padding: EdgeInsets.only(left: 20, right: 20),
-                        child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(key),
-                              MaterialButton(
-                                height: 50.0,
-                                minWidth: 50.0,
-                                onPressed:
-                                    getCanvasItemDocument(canvasItemId: key)
-                                        .delete,
-                                child: Text('X'),
-                              )
-                            ])),
-                    Divider(height: 4)
-                  ])))
-          .toList());
+      children: canvasItems.canvasItemMap.keys.map((key) {
+    final canvasItem = canvasItems.canvasItemMap[key];
+    var name;
+    switch (canvasItem.type) {
+      case CanvasItemType.Text:
+        name = 'Text: ' + canvasItem.value;
+        break;
+      case CanvasItemType.Button:
+        name = 'Button: ' + canvasItem.value.substring(4, 9);
+        break;
+      case CanvasItemType.Variable:
+        name = 'Variable: ' + canvasItem.value.substring(4, 9);
+        break;
+      case CanvasItemType.Image:
+        break;
+    }
+    return Container(
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Container(
+          padding: EdgeInsets.only(left: 20, right: 20),
+          child:
+              Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+            Text(name),
+            MaterialButton(
+              height: 50.0,
+              minWidth: 50.0,
+              onPressed: getCanvasItemDocument(canvasItemId: key).delete,
+              child: Text('X'),
+            )
+          ])),
+      Divider(height: 4)
+    ]));
+  }).toList());
 }
 
-getVariableListView(Map<String, Map<String, dynamic>> variables) {
+getVariableListView(
+    Map<String, Map<String, dynamic>> variables, _instantiatedVariables) {
   return ListView(
       children: variables.keys.map((key) {
+    final defaultValue = variables[key]['defaultValue'];
+    final instantiatedValue = _instantiatedVariables[key].toString();
+
     return Container(
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       Container(
@@ -531,8 +546,9 @@ getVariableListView(Map<String, Map<String, dynamic>> variables) {
           child:
               Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
             Text(
-              key,
-            ),
+                '${key.substring(4, 9)} (default: $defaultValue, now: $instantiatedValue)'
+                //  + ': (' + instantiatedValue + ')',
+                ),
             MaterialButton(
               height: 50.0,
               minWidth: 50.0,

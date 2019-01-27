@@ -23,6 +23,7 @@ class MyStateApp extends State {
   var _canvasItems = CanvasItems();
   Map<String, Map<String, dynamic>> _variables = Map();
   Map<String, int> _instantiatedVariables = Map();
+  Map<String, Map<String, dynamic>> _functions = Map();
 
   MyStateApp() {
     getCanvasItemsCollection().snapshots().listen((data) {
@@ -69,6 +70,16 @@ class MyStateApp extends State {
         _variables = newVariables;
       });
     });
+    getFunctionsCollection().snapshots().listen((data) {
+      final newFunctions = Map<String, Map<String, dynamic>>();
+      data.documents.forEach((doc) {
+        newFunctions.update(doc.documentID, (v) => doc.data,
+            ifAbsent: () => doc.data);
+      });
+      setState(() {
+        _functions = newFunctions;
+      });
+    });
   }
 
   Widget build(BuildContext context) {
@@ -78,8 +89,8 @@ class MyStateApp extends State {
           child: Row(children: [
         Expanded(
             child: Stack(
-                children:
-                    _canvasItems.getPositionedList(_instantiatedVariables))),
+                children: _canvasItems.getPositionedList(
+                    _instantiatedVariables, _btnOnPressed))),
         Container(
             width: 300,
             color: Colors.yellow,
@@ -155,6 +166,45 @@ class MyStateApp extends State {
         ),
       ])),
     ));
+  }
+
+  _btnOnPressed(String functionKey) {
+    final targetVariableId = _functions[functionKey]['targetVariable'];
+    final variable1Id = _functions[functionKey]['variable1'];
+    final variable2Id = _functions[functionKey]['variable2'];
+    final arithmetic = _functions[functionKey]['arithmetic'];
+
+    print(_instantiatedVariables[targetVariableId]);
+    final variable1Value = _instantiatedVariables[variable1Id];
+    final variable2Value = _instantiatedVariables[variable2Id];
+    if (variable1Value == null ||
+        variable2Value == null ||
+        arithmetic == null) {
+      print('variable doesnt exist or has been instantiated yet');
+      return;
+    }
+
+    var finalValue;
+    switch (arithmetic) {
+      case '+':
+        finalValue = variable1Value + variable2Value;
+        break;
+      case '-':
+        finalValue = variable1Value - variable2Value;
+        break;
+      case '*':
+        finalValue = variable1Value * variable2Value;
+        break;
+      case '/':
+        finalValue = variable1Value / variable2Value;
+        break;
+    }
+    if (finalValue == null) {
+      print(finalValue);
+      return;
+    }
+    _instantiatedVariables[targetVariableId] = finalValue;
+    setState(() {});
   }
 
   _addText(String text,

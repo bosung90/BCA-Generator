@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 class CanvasItems {
   final canvasItemMap = Map<String, CanvasItem>();
 
-  List getPositionedList(Map<String, int> _instantiatedVariables) {
+  List getPositionedList(
+      Map<String, int> _instantiatedVariables, btnOnPressed) {
     List<Positioned> positionedList = [];
     canvasItemMap.values.forEach((item) {
       switch (item.type) {
@@ -31,7 +32,12 @@ class CanvasItems {
             left: item.position['left'],
             right: item.position['right'],
             bottom: item.position['bottom'],
-            child: MaterialButton(onPressed: () {}, child: Text('B')),
+            child: MaterialButton(
+                color: Colors.grey,
+                onPressed: () {
+                  btnOnPressed(item.value);
+                },
+                child: Text('Button')),
           ));
           break;
         default:

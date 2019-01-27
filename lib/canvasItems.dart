@@ -17,12 +17,11 @@ class CanvasItems {
             bottom: item.position['bottom'],
             child: Draggable(
                 child: Text(item.value),
-                feedback: Material(
-                    type: MaterialType.transparency,
-                    child: Scaffold(
-                        body: Text(item.value,
-                            style:
-                                TextStyle(fontSize: 20, color: Colors.black)))),
+                feedback: Text(item.value,
+                    style: TextStyle(
+                        fontSize: 30,
+                        color: Colors.black,
+                        decoration: TextDecoration.none)),
                 childWhenDragging: Container(),
                 onDragEnd: (details) {
                   onDragEnd(key, details.offset.dx, details.offset.dy);
@@ -37,7 +36,11 @@ class CanvasItems {
             bottom: item.position['bottom'],
             child: Draggable(
                 child: Text(_instantiatedVariables[item.value].toString()),
-                feedback: Text(_instantiatedVariables[item.value].toString()),
+                feedback: Text(_instantiatedVariables[item.value].toString(),
+                    style: TextStyle(
+                        fontSize: 30,
+                        color: Colors.black,
+                        decoration: TextDecoration.none)),
                 childWhenDragging: Container(),
                 onDragEnd: (details) {
                   onDragEnd(key, details.offset.dx, details.offset.dy);

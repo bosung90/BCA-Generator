@@ -36,13 +36,6 @@ class MyStateApp extends State {
                   left: doc.data['left'].toDouble(),
                   top: doc.data['top'].toDouble()));
         } else if (doc.data['type'] == 'Variable') {
-          getVariableDocument(variableId: doc.data['value'])
-              .get()
-              .then((onValue) {
-            _instantiatedVariables.update(doc.data['value'], (v) => v,
-                ifAbsent: () => onValue.data['defaultValue'].round());
-            setState(() {});
-          });
           newCanvasItems.addCanvasItem(
               doc.documentID,
               CanvasItem.variable(doc.data['value'],
@@ -62,12 +55,17 @@ class MyStateApp extends State {
     });
     getVariablesCollection().snapshots().listen((data) {
       final newVariables = Map<String, Map<String, dynamic>>();
+      Map<String, int> newInstantiatedVariables = Map();
+
       data.documents.forEach((doc) {
         newVariables.update(doc.documentID, (v) => doc.data,
             ifAbsent: () => doc.data);
+        newInstantiatedVariables.update(doc.documentID, (v) => v,
+            ifAbsent: () => doc.data['defaultValue'].round());
       });
       setState(() {
         _variables = newVariables;
+        _instantiatedVariables = newInstantiatedVariables;
       });
     });
     getFunctionsCollection().snapshots().listen((data) {
@@ -170,7 +168,6 @@ class MyStateApp extends State {
   }
 
   _onDragEnd(String key, double x, double y) {
-    print('$key $x $y');
     getCanvasItemDocument(canvasItemId: key).updateData({'left': x, 'top': y});
   }
 
@@ -180,7 +177,6 @@ class MyStateApp extends State {
     final variable2Id = _functions[functionKey]['variable2'];
     final arithmetic = _functions[functionKey]['arithmetic'];
 
-    print(_instantiatedVariables[targetVariableId]);
     final variable1Value = _instantiatedVariables[variable1Id];
     final variable2Value = _instantiatedVariables[variable2Id];
     if (variable1Value == null ||

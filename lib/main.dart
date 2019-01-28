@@ -4,8 +4,15 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import './firestoreRefs.dart';
 import './canvasItems.dart';
 
-// CanvasItemList show value for Text, and id for variable
 // Put name list label on top of canvasItems and variable list items
+// Ability to create new GameBoard or download existing one
+// Variable dropdown should show first 5 letters of var ID and defaultValue
+// Add Button Name
+// Tap on CanvasItem to highlight which item
+// Ability to edit exisitg canvas item or variable
+// Fix drag and drop position is off by a bit
+// Change x and y to slider
+// Ability to load the app on the phone without edit options.
 
 main() {
   Firestore.instance.settings(timestampsInSnapshotsEnabled: true);
@@ -106,6 +113,19 @@ class MyStateApp extends State {
                       });
                     },
                     child: Text('CLEAR ALL',
+                        style: TextStyle(
+                            color: Colors.white, fontWeight: FontWeight.bold)),
+                  ),
+                  FlatButton(
+                    color: Colors.amber,
+                    onPressed: () {
+                      _variables.forEach((key, value) {
+                        _instantiatedVariables.update(
+                            key, (v) => value['defaultValue']);
+                      });
+                      setState(() {});
+                    },
+                    child: Text('RESET',
                         style: TextStyle(
                             color: Colors.white, fontWeight: FontWeight.bold)),
                   )
@@ -229,8 +249,8 @@ class MyStateApp extends State {
 
   Future<void> _showAddTextDialog() async {
     final nameTextFieldController = TextEditingController();
-    final topTextFieldController = TextEditingController();
-    final leftTextFieldController = TextEditingController();
+    final topTextFieldController = TextEditingController(text: '0');
+    final leftTextFieldController = TextEditingController(text: '0');
 
     return showDialog<void>(
       context: context,
@@ -281,8 +301,8 @@ class MyStateApp extends State {
   }
 
   Future<void> _showAddVariableDialog() async {
-    final topTextFieldController = TextEditingController();
-    final leftTextFieldController = TextEditingController();
+    final topTextFieldController = TextEditingController(text: '0');
+    final leftTextFieldController = TextEditingController(text: '0');
     String _selectedVariableId;
     return showDialog<void>(
       context: context,
@@ -380,8 +400,8 @@ class MyStateApp extends State {
   }
 
   Future<void> _showCreateButtonFunctionDialog() async {
-    final topTextFieldController = TextEditingController();
-    final leftTextFieldController = TextEditingController();
+    final topTextFieldController = TextEditingController(text: '0');
+    final leftTextFieldController = TextEditingController(text: '0');
     String _selectedTargetVariableId;
     String _selectedVariable1Id;
     String _selectedVariable2Id;
@@ -444,14 +464,12 @@ class MyStateApp extends State {
                                 value: key, child: Text(key));
                           }).toList()),
                       TextField(
-                        autofocus: true,
                         controller: leftTextFieldController,
                         keyboardType: TextInputType.numberWithOptions(
                             signed: false, decimal: false),
                         decoration: InputDecoration(labelText: "X"),
                       ),
                       TextField(
-                        autofocus: true,
                         controller: topTextFieldController,
                         keyboardType: TextInputType.numberWithOptions(
                             signed: false, decimal: false),

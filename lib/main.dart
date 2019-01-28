@@ -321,7 +321,9 @@ class MyStateApp extends State {
                   },
                   items: _variables.keys.map((key) {
                     return DropdownMenuItem<String>(
-                        value: key, child: Text(key));
+                        value: key,
+                        child: Text(
+                            '${key.substring(4, 9)} (default: ${_variables[key]['defaultValue']})'));
                   }).toList()),
               TextField(
                 controller: leftTextFieldController,
@@ -425,7 +427,9 @@ class MyStateApp extends State {
                           },
                           items: _variables.keys.map((key) {
                             return DropdownMenuItem<String>(
-                                value: key, child: Text(key));
+                                value: key,
+                                child: Text(
+                                    '${key.substring(4, 9)} (default: ${_variables[key]['defaultValue']})'));
                           }).toList()),
                       DropdownButton<String>(
                           hint: new Text("Select a Variable1"),
@@ -437,7 +441,9 @@ class MyStateApp extends State {
                           },
                           items: _variables.keys.map((key) {
                             return DropdownMenuItem<String>(
-                                value: key, child: Text(key));
+                                value: key,
+                                child: Text(
+                                    '${key.substring(4, 9)} (default: ${_variables[key]['defaultValue']})'));
                           }).toList()),
                       DropdownButton<String>(
                           hint: new Text("Select an Arithmetic"),
@@ -461,7 +467,9 @@ class MyStateApp extends State {
                           },
                           items: _variables.keys.map((key) {
                             return DropdownMenuItem<String>(
-                                value: key, child: Text(key));
+                                value: key,
+                                child: Text(
+                                    '${key.substring(4, 9)} (default: ${_variables[key]['defaultValue']})'));
                           }).toList()),
                       TextField(
                         controller: leftTextFieldController,
@@ -527,7 +535,8 @@ getCanvasItemListView(
         name = 'Button: ' + canvasItem.value.substring(4, 9);
         break;
       case CanvasItemType.Variable:
-        name = 'Variable: ' + canvasItem.value.substring(4, 9);
+        name =
+            'Variable: ${canvasItem.value.substring(4, 9)} (now: ${_instantiatedVariables[canvasItem.value]})';
         break;
       case CanvasItemType.Image:
         break;

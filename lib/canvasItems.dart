@@ -59,13 +59,13 @@ class CanvasItems {
                     onPressed: () {
                       btnOnPressed(item.value);
                     },
-                    child: Text('Button')),
+                    child: Text(item.name != null ? item.name : 'Button')),
                 feedback: MaterialButton(
                     color: Colors.grey,
                     onPressed: () {
                       btnOnPressed(item.value);
                     },
-                    child: Text('Button')),
+                    child: Text(item.name != null ? item.name : 'Button')),
                 childWhenDragging: Container(),
                 onDragEnd: (details) {
                   onDragEnd(key, details.offset.dx, details.offset.dy);
@@ -96,6 +96,7 @@ class CanvasItem {
   Map<String, double> position = Map();
   CanvasItemType type;
   var value;
+  var name;
 
   CanvasItem.variable(String variableKey,
       {double top, double bottom, double left, double right}) {
@@ -110,8 +111,9 @@ class CanvasItem {
   }
 
   CanvasItem.button(String functionKey,
-      {double top, double bottom, double left, double right}) {
+      {double top, double bottom, double left, double right, String name}) {
     this.value = functionKey;
+    this.name = name;
     this.position = {
       'top': top,
       'bottom': bottom,

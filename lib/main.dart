@@ -7,7 +7,6 @@ import './canvasItems.dart';
 // Put name list label on top of canvasItems and variable list items
 // Ability to create new GameBoard or download existing one
 // Variable dropdown should show first 5 letters of var ID and defaultValue
-// Add Button Name
 // Tap on CanvasItem to highlight which item
 // Ability to edit exisitg canvas item or variable
 // Fix drag and drop position is off by a bit
@@ -52,6 +51,7 @@ class MyStateApp extends State {
           newCanvasItems.addCanvasItem(
               doc.documentID,
               CanvasItem.button(doc.data['value'],
+                  name: doc.data['name'],
                   left: doc.data['left'].toDouble(),
                   top: doc.data['top'].toDouble()));
         }
@@ -402,6 +402,7 @@ class MyStateApp extends State {
   }
 
   Future<void> _showCreateButtonFunctionDialog() async {
+    final nameTextFieldController = TextEditingController();
     final topTextFieldController = TextEditingController(text: '0');
     final leftTextFieldController = TextEditingController(text: '0');
     String _selectedTargetVariableId;
@@ -417,6 +418,11 @@ class MyStateApp extends State {
                 content: SingleChildScrollView(
                   child: ListBody(
                     children: [
+                      TextField(
+                        autofocus: true,
+                        controller: nameTextFieldController,
+                        decoration: InputDecoration(labelText: "Name"),
+                      ),
                       DropdownButton<String>(
                           hint: new Text("Select a Target Variable"),
                           value: _selectedTargetVariableId,
@@ -502,6 +508,7 @@ class MyStateApp extends State {
                         'variable2': _selectedVariable2Id,
                       }).then((docRef) {
                         getCanvasItemsCollection().add({
+                          'name': nameTextFieldController.text,
                           'left': double.parse(leftTextFieldController.text),
                           'top': double.parse(topTextFieldController.text),
                           'type': 'Button',
